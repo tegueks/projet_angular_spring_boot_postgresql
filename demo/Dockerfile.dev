@@ -1,0 +1,26 @@
+FROM eclipse-temurin:21-jdk-alpine AS dev
+
+WORKDIR /app
+
+# Copie des fichiers nécessaires pour l'installation
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Rendre le wrapper exécutable
+RUN chmod +x mvnw
+
+# Pré-télécharger les dépendances
+RUN ./mvnw dependency:go-offline
+
+# Installation d'inotify-tools pour Spring Devtools (sur Alpine)
+RUN apk add --no-cache inotify-tools
+
+# Copier tout le projet (le code source sera monté avec volumes)
+COPY . .
+
+# Port Spring Boot
+EXPOSE 8080
+
+# Commande de dev avec Spring Boot
+CMD ["./mvnw", "spring-boot:run"]

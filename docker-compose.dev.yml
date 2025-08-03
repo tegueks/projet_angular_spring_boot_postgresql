@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile.dev
+    container_name: my-spring-app
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./demo:/app
+      - maven-repo:/root/.m2
+    ports:
+      - "8080:8080"
+    networks:
+      - backend-network
+      - frontend-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./angular-frontend
+      dockerfile: Dockerfile.dev
+    container_name: angular-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./angular-frontend:/app
+      - /app/node_modules
+      - ./angular-frontend/proxy.conf.json:/app/proxy.conf.json
+    networks:
+      - frontend-network
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:17
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+volumes:
+  db-data:
+  maven-repo:
+
+networks:
+  backend-network:
+  frontend-network:
