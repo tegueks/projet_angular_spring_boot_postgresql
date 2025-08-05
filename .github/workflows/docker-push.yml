@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: docker.io
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   PROJECT_NAME: projet-workspace
   FRONTEND_IMAGE: angular-frontend
   BACKEND_IMAGE: spring-backend
@@ -28,7 +28,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ env.DOCKERHUB_TOKEN }}
+          password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
