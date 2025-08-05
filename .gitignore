@@ -24,8 +24,8 @@ target/
 *.iws
 
 # Maven Wrapper
-.mvn/
-!.mvn/wrapper/maven-wrapper.jar
+#.mvn/
+#!.mvn/wrapper/maven-wrapper.jar
 
 # === ANGULAR ===
 node_modules/
