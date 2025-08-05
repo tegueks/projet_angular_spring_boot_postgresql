@@ -37,21 +37,8 @@ services:
       - frontend-network
     depends_on:
       - backend
-
-  postgres:
-    image: postgres:17
-    container_name: my-postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend-network
-
+      
 volumes:
-  db-data:
   maven-repo:
 
 networks:
