@@ -10,32 +10,14 @@
 docker-compose.override.yml
 
 # === MAVEN / JAVA ===
-target/
-*.class
-*.jar
-*.war
-*.ear
-.project
-.settings/
-.classpath
-.idea/
-*.iml
-*.ipr
-*.iws
+
 
 # Maven Wrapper
 #.mvn/
 #!.mvn/wrapper/maven-wrapper.jar
 
 # === ANGULAR ===
-node_modules/
-dist/
-.angular/
-coverage/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
+
 
 # Angular env
 .env.local
