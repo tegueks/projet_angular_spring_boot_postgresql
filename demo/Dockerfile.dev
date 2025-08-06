@@ -4,7 +4,9 @@ WORKDIR /app
 
 # Copie des fichiers nécessaires pour l'installation
 COPY mvnw .
+
 COPY .mvn .mvn
+
 COPY pom.xml .
 
 # Rendre le wrapper exécutable
