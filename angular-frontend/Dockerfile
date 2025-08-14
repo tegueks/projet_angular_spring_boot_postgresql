@@ -5,6 +5,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+# Ajoute la variable d'environnement ici pour la build
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 RUN npm run build --prod
 
 # Étape 2 : Serveur Nginx

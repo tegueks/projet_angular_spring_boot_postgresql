@@ -5,46 +5,51 @@ services:
     build:
       context: ./demo
       dockerfile: Dockerfile
+    image: backend
     container_name: my-spring-app
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "8080:8080"
+      SPRING_PROFILES_ACTIVE: prod
     networks:
       - backend-network
-      - frontend-network
-    depends_on:
-      - postgres
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./angular-frontend
       dockerfile: Dockerfile
+    image: frontend
     container_name: angular-frontend
-    ports:
-      - "80:80"
     networks:
       - frontend-network
-    depends_on:
-      - backend
-
-  postgres:
-    image: postgres:17
-    container_name: my-postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
       - backend-network
+    restart: unless-stopped
 
-volumes:
-  db-data:
+  nginx:
+    image: nginx:stable
+    container_name: nginx-reverse-proxy
+    volumes:
+      - ${PWD}/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${PWD}/nginx/log:/var/log/nginx
+      - ${PWD}/nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "8081:80"
+      - "8443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - frontend-network
+      - backend-network
+    restart: unless-stopped
 
 networks:
   backend-network:
+    external: true
+    driver: bridge
   frontend-network:
+    external: true
+    driver: bridge
+
