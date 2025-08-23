@@ -28,12 +28,17 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:stable
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx-custom
     container_name: nginx-reverse-proxy
+    environment:
+     SSL_CERT_PATH: /etc/nginx/certs/selfsigned.crt
+     SSL_KEY_PATH: /etc/nginx/certs/selfsigned.key
     volumes:
-      - ${PWD}/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ${PWD}/nginx/log:/var/log/nginx
-      - ${PWD}/nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/log:/var/log/nginx
+      - ./nginx/certs:/etc/nginx/certs:ro
     ports:
       - "8081:80"
       - "8443:443"

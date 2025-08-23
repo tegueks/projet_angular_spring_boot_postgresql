@@ -1,28 +1,20 @@
-# Redirection HTTP -> HTTPS
 server {
     listen 80;
     server_name _;
 
-    return 301 https://$host:8443$request_uri;
+    return 301 https://$host:443$request_uri;
 }
 
-
-# HTTPS
 server {
     listen 443 ssl;
     server_name _;
-	
-	# Certificats auto-signés
-    ssl_certificate /etc/nginx/certs/selfsigned.crt;
-    ssl_certificate_key /etc/nginx/certs/selfsigned.key;
 
-    # Protocoles & chiffrements
+    ssl_certificate     ${SSL_CERT_PATH};
+    ssl_certificate_key ${SSL_KEY_PATH};
+
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
-	
-    # ==========================
-    # FRONTEND Angular (SPA)
-    # ==========================
+
     location / {
         proxy_pass http://frontend:80/;
         proxy_http_version 1.1;
@@ -30,14 +22,10 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Permet à Angular de gérer ses propres routes
-		proxy_intercept_errors on;
+        proxy_intercept_errors on;
         error_page 404 /index.html;
     }
 
-    # ==========================
-    # BACKEND Spring Boot API
-    # ==========================
     location /api/ {
         proxy_pass http://backend:8080/api/;
         proxy_http_version 1.1;
@@ -46,9 +34,6 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # ==========================
-    # Health Check
-    # ==========================
     location /health {
         proxy_pass http://backend:8080/actuator/health;
     }
