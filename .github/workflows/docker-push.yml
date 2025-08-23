@@ -12,6 +12,8 @@ env:
   PROJECT_NAME: projet-workspace
   FRONTEND_IMAGE: angular-frontend
   BACKEND_IMAGE: spring-backend
+  NGINX_IMAGE: nginx-custom
+  IMAGE_TAG: 1.0.0
 
 jobs:
   build-and-push:
@@ -36,7 +38,9 @@ jobs:
           context: ./demo
           file: ./demo/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:latest
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -44,4 +48,17 @@ jobs:
           context: ./angular-frontend
           file: ./angular-frontend/Dockerfile
           push: true
-          tags: ${{ env.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:latest
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:latest
+
+      - name: Build and push nginx custom image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/${{ env.NGINX_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKER_USERNAME }}/${{ env.NGINX_IMAGE }}:latest
+
