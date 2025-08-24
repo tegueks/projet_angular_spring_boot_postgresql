@@ -1,4 +1,4 @@
-server {
+server { 
     listen 80;
     server_name _;
 
@@ -16,7 +16,8 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://frontend:80/;
+        # FRONTEND_HOST sera remplacé dynamiquement via envsubst
+        proxy_pass http://${FRONTEND_HOST}:80/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -27,7 +28,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://backend:8080/api/;
+        proxy_pass http://${BACKEND_HOST}:8080/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -35,6 +36,6 @@ server {
     }
 
     location /health {
-        proxy_pass http://backend:8080/actuator/health;
+        proxy_pass http://${BACKEND_HOST}:8080/actuator/health;
     }
 }

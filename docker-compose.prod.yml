@@ -36,6 +36,8 @@ services:
     environment:
      SSL_CERT_PATH: /etc/nginx/certs/selfsigned.crt
      SSL_KEY_PATH: /etc/nginx/certs/selfsigned.key
+     BACKEND_HOST: backend
+     FRONTEND_HOST: frontend
     volumes:
       - ./nginx/log:/var/log/nginx
       - ./nginx/certs:/etc/nginx/certs:ro
