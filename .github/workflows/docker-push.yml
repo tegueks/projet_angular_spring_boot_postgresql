@@ -13,7 +13,7 @@ env:
   FRONTEND_IMAGE: angular-frontend
   BACKEND_IMAGE: spring-backend
   NGINX_IMAGE: nginx-custom
-  IMAGE_TAG: 1.0.0
+  IMAGE_TAG: 1.0.1
 
 jobs:
   build-and-push:
