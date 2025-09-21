@@ -33,7 +33,6 @@ public class EmployeeControllerTest {
 		    Employee bob = new Employee("Bob", "Martin", "bob@mail.com");
 		    bob.setId(2L);
 	        List<Employee> employees = Arrays.asList(alice, bob);
-
 	        when(employeeRepository.findAll()).thenReturn(employees);
 
 	        mockMvc.perform(get("/api/v1/employees"))
