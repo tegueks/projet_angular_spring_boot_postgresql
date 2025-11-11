@@ -1,0 +1,60 @@
+# ==========================================================
+# 🚀 CI/CD — Déploiement Production (GitHub → Jenkins)
+# ==========================================================
+name: Release and Deploy (Production)
+
+on:
+  push:
+    branches:
+      - main           # Déploiement prod déclenché sur merge vers main
+    tags:
+      - 'v*.*.*'       # OU sur un tag versionné
+  workflow_dispatch:    # Lancement manuel possible (utile pour rollback ou re-livraison)
+
+concurrency:
+  group: production
+  cancel-in-progress: false  # Ne jamais annuler un déploiement en cours
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------
+      # Étape 1 : Checkout du code
+      # ------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------
+      # Étape 2 : Récupération du tag ou du commit
+      # ------------------------------------------------------
+      - name: Extract version info
+        id: version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="${GITHUB_SHA::7}" # 7 premiers caractères du commit
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Version à déployer : ${VERSION}"
+
+      # ------------------------------------------------------
+      # Étape 3 : Déclenchement du pipeline Jenkins PROD
+      # ------------------------------------------------------
+      - name: Trigger Jenkins Production Pipeline
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          echo "Déclenchement du pipeline Jenkins pour la release ${VERSION}"
+          curl -X POST \
+            -u "${JENKINS_USER}:${JENKINS_TOKEN}" \
+            "${JENKINS_URL}/job/projet-workspace-prod/buildWithParameters?token=jenkins-trigger&VERSION=${VERSION}" \
+            --fail
+          echo "Jenkins pipeline PRODUCTION déclenchée avec succès."
