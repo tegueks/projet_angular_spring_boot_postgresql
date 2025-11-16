@@ -1,4 +1,4 @@
-// Jenkinsfile (declarative) - projet-workspace
+ // Jenkinsfile (declarative) - projet-workspace
 pipeline {
   agent any
 
