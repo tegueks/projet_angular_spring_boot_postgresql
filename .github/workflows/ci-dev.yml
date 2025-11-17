@@ -9,11 +9,11 @@ name: Build and Test (Dev)
 on:
   push:
     branches:
-      - develop
-  pull_request:
-    branches:
-      - develop
-  workflow_dispatch:
+      - maste
+#  pull_request:
+#    branches:
+#      - develop
+#  workflow_dispatch:
 
 # ==========================================================
 # Concurrence : empêche les builds en double
