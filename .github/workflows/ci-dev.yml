@@ -1,0 +1,122 @@
+# ==========================================================
+# Nom du workflow CI GitHub — Environnement Développement
+# ==========================================================
+name: Build and Test (Dev)
+
+# ==========================================================
+# Déclencheurs : CI à chaque push sur develop ou PR vers develop
+# ==========================================================
+on:
+  push:
+    branches:
+      - maste
+#  pull_request:
+#    branches:
+#      - develop
+#  workflow_dispatch:
+
+# ==========================================================
+# Concurrence : empêche les builds en double
+# ==========================================================
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ==========================================================
+# Job principal
+# ==========================================================
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20]
+        java-version: [21]
+
+    steps:
+      # Cloner le dépôt
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Cache Maven
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-
+
+      # Installer Java
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      # Build backend + tests unitaires
+      - name: Build backend and run unit tests
+        working-directory: ./demo
+        run: |
+          mvn -B clean verify
+          echo "Backend build & tests terminés"
+
+      # Upload des rapports de test backend
+      - name: Upload backend test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: demo/target/surefire-reports/*.xml
+
+      # Installer Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # Cache NPM
+      - name: Cache NPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      # Build Angular + tests unitaires (mode dev)
+      - name: Build frontend and run unit tests
+        working-directory: ./angular-frontend
+        run: |
+          npm ci
+          npm run test -- --watch=false --browsers=ChromeHeadless --single-run
+          npm run build -- --configuration=development
+          echo "Frontend build & tests terminés"
+
+      # Upload du build frontend
+      - name: Upload frontend build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: angular-frontend/dist/**
+
+      # Déclenchement Jenkins (intégration)
+      - name: Trigger Jenkins (Dev)
+        if: success() && github.event_name != 'pull_request'
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+          GITHUB_COMMIT: ${{ github.sha }}
+        run: |
+          echo "Déclenchement du pipeline Jenkins pour la branche ${GITHUB_BRANCH}"
+          curl -X POST \
+            -u "${JENKINS_USER}:${JENKINS_TOKEN}" \
+            "${JENKINS_URL}/job/projet-workspace/buildWithParameters?token=jenkins-trigger&BRANCH=${GITHUB_BRANCH}&COMMIT=${GITHUB_COMMIT}" \
+            --fail
+          echo "Jenkins pipeline déclenchée avec succès."
